@@ -131,7 +131,7 @@ void pwm_init(void)
 {
 	if (bbb_backend) {
 		/* Grab PWM0A and PWM0B found on P9-31 and P9-29 */
-		pwms[0] = libsoc_pwm_request(0, 0, LS_GREEDY);
-		pwms[1] = libsoc_pwm_request(0, 1, LS_GREEDY);
+		pwms[0] = libsoc_pwm_request(0, 0, LS_PWM_GREEDY);
+		pwms[1] = libsoc_pwm_request(0, 1, LS_PWM_GREEDY);
 	}
 }

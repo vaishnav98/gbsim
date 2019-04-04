@@ -260,6 +260,6 @@ void gpio_init(void)
 		 * testing.
 		 */
 		for (i=0; i<6; i++)
-			gpios[i] = libsoc_gpio_request(56+i, LS_GREEDY);
+			gpios[i] = libsoc_gpio_request(56+i, LS_GPIO_GREEDY);
 	}
 }
