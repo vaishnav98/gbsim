@@ -18,7 +18,7 @@ AC_PROG_INSTALL
 # Checks for libraries.
 AC_CHECK_LIB([pthread], [main])
 PKG_CHECK_MODULES(SOC, libsoc)
-PKG_CHECK_MODULES(USBG, libusbg)
+PKG_CHECK_MODULES(USBG, libusbgx)
 
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h stdlib.h string.h sys/ioctl.h sys/mount.h unistd.h])
