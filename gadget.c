@@ -24,7 +24,7 @@ int gadget_create(usbg_state **s, usbg_gadget **g)
 	int ret = -EINVAL;
 	int usbg_ret;
 
-	usbg_gadget_attrs g_attrs = {
+	struct usbg_gadget_attrs g_attrs = {
 			0x0200, /* bcdUSB */
 			0x00, /* Defined at interface level */
 			0x00, /* subclass */
@@ -35,13 +35,13 @@ int gadget_create(usbg_state **s, usbg_gadget **g)
 			0x0001, /* Verson of device */
 	};
 
-	usbg_gadget_strs g_strs = {
+	struct usbg_gadget_strs g_strs = {
 			"0123456789", /* Serial number */
 			"Toshiba", /* Manufacturer */
 			"AP Bridge" /* Product string */
 	};
 
-	usbg_config_strs c_strs = {
+	struct usbg_config_strs c_strs = {
 			"AP Bridge"
 	};
 
@@ -61,7 +61,7 @@ int gadget_create(usbg_state **s, usbg_gadget **g)
 		goto out2;
 	}
 
-	usbg_ret = usbg_create_function(*g, F_FFS, "gbsim", NULL, &f);
+	usbg_ret = usbg_create_function(*g, USBG_F_FFS, "gbsim", NULL, &f);
 	if (usbg_ret != USBG_SUCCESS) {
 		gbsim_error("Error creating gbsim function\n");
 		gbsim_error("Error: %s : %s\n", usbg_error_name(usbg_ret),
