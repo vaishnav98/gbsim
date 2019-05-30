@@ -101,6 +101,7 @@ struct op_msg {
 		struct gb_svc_intf_unipro_response	svc_intf_unipro_response;
 		struct gb_svc_intf_activate_response	svc_intf_activate_response;
 		struct gb_svc_intf_resume_response	svc_intf_resume_response;
+		struct gb_svc_intf_set_pwrm_request     svc_intf_set_pwrm_request;
 		struct gb_svc_intf_set_pwrm_response	svc_intf_set_pwrm_response;
 		struct gb_gpio_line_count_response	gpio_lc_rsp;
 		struct gb_gpio_activate_request		gpio_act_req;

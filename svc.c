@@ -54,6 +54,7 @@ static int svc_handler_request(uint16_t cport_id, uint16_t hd_cport_id,
 	struct gb_svc_dme_peer_set_response *dme_set_response;
 	struct gb_svc_route_create_request *svc_route_create;
 	struct gb_svc_route_destroy_request *svc_route_destroy;
+	struct gb_svc_intf_set_pwrm_request *svc_intf_set_pwrm;
 	struct gb_svc_pwrmon_rail_count_get_response *svc_pwrmon_rail_count_get_response;
 	struct gb_svc_intf_vsys_response *svc_intf_vsys_response;
 	struct gb_svc_intf_refclk_response *svc_intf_refclk_response;
@@ -223,8 +224,13 @@ static int svc_handler_request(uint16_t cport_id, uint16_t hd_cport_id,
 		break;
 	case GB_SVC_TYPE_INTF_SET_PWRM:
 		payload_size = sizeof(*svc_intf_set_pwrm_response);
+		svc_intf_set_pwrm = &op_req->svc_intf_set_pwrm_request;
 		svc_intf_set_pwrm_response = &op_rsp->svc_intf_set_pwrm_response;
-		svc_intf_set_pwrm_response->result_code = 0;
+		if (svc_intf_set_pwrm->tx_mode != GB_SVC_UNIPRO_HIBERNATE_MODE)
+        svc_intf_set_pwrm_response->result_code = GB_SVC_SETPWRM_PWR_LOCAL;
+        else
+        svc_intf_set_pwrm_response->result_code = GB_SVC_SETPWRM_PWR_OK;
+
 		break;
 	case GB_SVC_TYPE_MODULE_INSERTED:
 	case GB_SVC_TYPE_MODULE_REMOVED:
