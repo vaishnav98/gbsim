@@ -278,7 +278,7 @@ static void arpc_response_send(const struct usb_ctrlrequest *setup)
 
 	arpc_size = le16toh(setup->wLength);
 	if (arpc_size < sizeof(*arpc_req))
-		gbsim_debug("arpc run received with the wrong size: %u : %lu\n",
+		gbsim_debug("arpc run received with the wrong size: %u : %u\n",
 			    arpc_size, sizeof(*arpc_req));
 
 	count = read(control, buf, arpc_size);

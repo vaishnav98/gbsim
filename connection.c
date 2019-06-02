@@ -151,41 +151,13 @@ static void get_protocol_operation(uint16_t cport_id, char **protocol,
 		*protocol = "UART";
 		*operation = uart_get_operation(type);
 		break;
-	case GREYBUS_PROTOCOL_LOOPBACK:
-		*protocol = "LOOPBACK";
-		*operation = loopback_get_operation(type);
-		break;
 	case GREYBUS_PROTOCOL_PWM:
 		*protocol = "PWM";
 		*operation = pwm_get_operation(type);
 		break;
-	case GREYBUS_PROTOCOL_SDIO:
-		*protocol = "SDIO";
-		*operation = sdio_get_operation(type);
-		break;
 	case GREYBUS_PROTOCOL_SPI:
 		*protocol = "SPI";
 		*operation = spi_get_operation(type);
-		break;
-	case GREYBUS_PROTOCOL_LIGHTS:
-		*protocol = "LIGHTS";
-		*operation = lights_get_operation(type);
-		break;
-	case GREYBUS_PROTOCOL_POWER_SUPPLY:
-		*protocol = "POWER_SUPPLY";
-		*operation = power_supply_get_operation(type);
-		break;
-	case GREYBUS_PROTOCOL_BOOTROM:
-		*protocol = "BOOTROM";
-		*operation = bootrom_get_operation(type);
-		break;
-	case GREYBUS_PROTOCOL_FW_MANAGEMENT:
-		*protocol = "fw-mgmt";
-		*operation = fw_mgmt_get_operation(type);
-		break;
-	case GREYBUS_PROTOCOL_FW_DOWNLOAD:
-		*protocol = "fw-download";
-		*operation = fw_download_get_operation(type);
 		break;
 	default:
 		*protocol = "(Unknown protocol)";
@@ -266,22 +238,8 @@ static int connection_recv_handler(struct gbsim_connection *connection,
 		return uart_handler(connection, rbuf, rsize, tbuf, tsize);
 	case GREYBUS_PROTOCOL_PWM:
 		return pwm_handler(connection, rbuf, rsize, tbuf, tsize);
-	case GREYBUS_PROTOCOL_SDIO:
-		return sdio_handler(connection, rbuf, rsize, tbuf, tsize);
 	case GREYBUS_PROTOCOL_SPI:
 		return spi_handler(connection, rbuf, rsize, tbuf, tsize);
-	case GREYBUS_PROTOCOL_LIGHTS:
-		return lights_handler(connection, rbuf, rsize, tbuf, tsize);
-	case GREYBUS_PROTOCOL_POWER_SUPPLY:
-		return power_supply_handler(connection, rbuf, rsize, tbuf, tsize);
-	case GREYBUS_PROTOCOL_LOOPBACK:
-		return loopback_handler(connection, rbuf, rsize, tbuf, tsize);
-	case GREYBUS_PROTOCOL_BOOTROM:
-		return bootrom_handler(connection, rbuf, rsize, tbuf, tsize);
-	case GREYBUS_PROTOCOL_FW_MANAGEMENT:
-		return fw_mgmt_handler(connection, rbuf, rsize, tbuf, tsize);
-	case GREYBUS_PROTOCOL_FW_DOWNLOAD:
-		return fw_download_handler(connection, rbuf, rsize, tbuf, tsize);
 	default:
 		gbsim_error("handler not found for cport %u\n",
 				connection->cport_id);

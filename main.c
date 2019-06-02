@@ -129,9 +129,8 @@ int main(int argc, char *argv[])
 	gpio_init();
 	i2c_init();
 	uart_init();
-	sdio_init();
-	loopback_init();
-
+	pwm_init();
+	
 	ret = functionfs_loop();
 
 out_cleanup:

@@ -10,7 +10,6 @@ gbsim_SOURCES = \
 	arpc.h \
 	config.h \
 	connection.c \
-	bootrom.c \
 	functionfs.c \
 	gadget.c \
 	gbsim.h \
@@ -24,16 +23,10 @@ gbsim_SOURCES = \
 	i2c.c \
 	interface.c \
 	inotify.c \
-	loopback.c \
 	main.c \
 	manifest.c \
 	pwm.c \
-	sdio.c \
 	spi.c \
-	power_supply.c \
-	light.c \
-	fw-management.c \
-	fw-download.c \
 	uart.c
 
 gbsim_CPPFLAGS = \
