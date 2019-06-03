@@ -286,7 +286,6 @@ void gpio_init(void);
 
 int i2c_handler(struct gbsim_connection *, void *, size_t, void *, size_t);
 char *i2c_get_operation(uint8_t type);
-void i2c_init(void);
 
 int pwm_handler(struct gbsim_connection *, void *, size_t, void *, size_t);
 char *pwm_get_operation(uint8_t type);

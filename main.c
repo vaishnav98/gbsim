@@ -17,11 +17,11 @@
 #include "gbsim.h"
 #include "gbsim_usb.h"
 
-int bbb_backend = 0;
+int bbb_backend = 1;
 int i2c_adapter = 0;
 int uart_portno = 0;
 int uart_count = 0;
-char *hotplug_basedir;
+char *hotplug_basedir="/tmp/gbsim";
 int verbose = 0;
 
 static struct sigaction sigact;
@@ -127,7 +127,6 @@ int main(int argc, char *argv[])
 		goto out_cleanup;
 
 	gpio_init();
-	i2c_init();
 	uart_init();
 	pwm_init();
 	

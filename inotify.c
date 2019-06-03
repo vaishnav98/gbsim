@@ -214,8 +214,8 @@ int inotify_start(struct gbsim_svc *svc, char *base_dir)
 
 	ret = stat(root, &root_stat);
 	if (ret < 0 || !S_ISDIR(root_stat.st_mode) || access(root, R_OK|W_OK) < 0) {
-		gbsim_error("invalid base directory %s\n", root);
-		exit(EXIT_FAILURE);
+		mkdir( base_dir, 0777);
+		mkdir( root, 0777);
 	}
 
 	if ((notify_fd = inotify_init()) < 0)
