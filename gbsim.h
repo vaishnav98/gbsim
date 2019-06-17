@@ -264,7 +264,6 @@ int svc_handler(struct gbsim_connection *, void *, size_t, void *, size_t);
 int svc_request_send(uint8_t, uint8_t);
 char *svc_get_operation(uint8_t type);
 int svc_get_next_intf_id(struct gbsim_svc *svc);
-
 int svc_init(void);
 void svc_exit(void);
 
