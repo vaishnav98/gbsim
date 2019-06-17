@@ -129,6 +129,7 @@ int main(int argc, char *argv[])
 	gpio_init();
 	uart_init();
 	pwm_init();
+	spi_init();
 	
 	ret = functionfs_loop();
 
