@@ -1,3 +1,5 @@
+#!/bin/bash
+
 modprobe greybus
 modprobe gb-es2
 modprobe gb-gbphy
@@ -8,6 +10,6 @@ modprobe gb-uart
 modprobe configfs
 mount -t configfs none /sys/kernel/config
 modprobe libcomposite
-insmod dummy_hcd/dummy_hcd.ko
+modprobe dummy_hcd
 mkdir -p /tmp/gbsim/hotplug-module
 gbsim
