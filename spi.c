@@ -13,12 +13,15 @@
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
-
+#include <sys/ioctl.h>
+#include <sys/types.h>
+#include <linux/spi/spidev.h>
 #include "gbsim.h"
 
 #define SPI_BPW_MASK(bits) BIT((bits) - 1)
 #define SPIDEV_TYPE	0x00
 #define SPINOR_TYPE	0x01
+#define SPIMOD_TYPE	0x02
 
 /*
  * this control the number of devices that will be created, for even chipselect
@@ -79,6 +82,14 @@ static struct gb_spi_dev_config spidev_config = {
 	.device_type	= GB_SPI_SPI_DEV,
 };
 
+static struct gb_spi_dev_config spimod_config = {
+	.mode		= GB_SPI_MODE_MODE_0,
+	.bits_per_word	= 8,
+	.max_speed_hz	= 6000000,
+	.name		= "custom",
+	.device_type	= GB_SPI_SPI_MODALIAS ,
+};
+
 static struct gb_spi_dev_config spinor_config = {
 	.mode		= GB_SPI_MODE_MODE_3,
 	.bits_per_word	= 32,
@@ -87,6 +98,7 @@ static struct gb_spi_dev_config spinor_config = {
 	.device_type	= GB_SPI_SPI_NOR,
 };
 
+static int ifd1;
 /* Flash opcodes. */
 #define SPINOR_OP_WREN		0x06	/* Write enable */
 #define SPINOR_OP_RDSR		0x05	/* Read status register */
@@ -160,28 +172,19 @@ static int spidev_xfer_req_recv(struct gb_spi_dev *dev,
 				struct gb_spi_transfer *xfer,
 				uint8_t *xfer_data)
 {
-	int i;
-	int fd;
 	int ret;
-
-	/* if it is only a write transfer write it to a file in tmp */
-	if (xfer->xfer_flags & ~GB_SPI_XFER_READ) {
-		fd = open("/tmp/spi_file", O_WRONLY | O_CREAT | O_APPEND, 0);
-		lseek(fd, SEEK_END, 0);
-		ret = write(fd, xfer_data, xfer->len);
-		if (ret < xfer->len)
-			gbsim_debug("%s: Failed to write %u bytes: %d\n",
-				    __func__, xfer->len, ret);
-		close(fd);
-		return 0;
-	}
-
-	/* if it is read/write, e.g., spidev_test, just return the complement */
-	for (i = 0; i < xfer->len; i++, xfer_data++, dev->buf_resp++)
-		*dev->buf_resp = ~(*xfer_data);
-
+	struct spi_ioc_transfer tr = {
+		.tx_buf = (unsigned long)xfer_data,
+		.rx_buf = (unsigned long)dev->buf_resp,
+		.len = xfer->len,
+		.delay_usecs = xfer->delay_usecs,
+		.speed_hz = xfer->speed_hz,
+		.bits_per_word = xfer->bits_per_word,
+	};
+	ret = ioctl(ifd1, SPI_IOC_MESSAGE(1), &tr);
+	if (ret < 1)
+		gbsim_error("can't send spi message");
 	dev->resp_size = xfer->len;
-
 	return 0;
 }
 
@@ -238,17 +241,21 @@ static int spi_set_device(uint8_t cs, int spi_type)
 	struct gb_spi_dev *spi_dev = &master->devices[cs];
 
 	switch (spi_type) {
-	case SPINOR_TYPE:
-		spi_dev->xfer_req_recv = spinor_xfer_req_recv;
-		spi_dev->buf_size = SPI_NOR_SIZE;
-		spi_dev->conf = &spinor_config;
-		break;
-	default:
-	case SPIDEV_TYPE:
-		spi_dev->xfer_req_recv = spidev_xfer_req_recv;
-		spi_dev->buf_size = 0;
-		spi_dev->conf = &spidev_config;
-		break;
+		case SPINOR_TYPE:
+			spi_dev->xfer_req_recv = spinor_xfer_req_recv;
+			spi_dev->buf_size = SPI_NOR_SIZE;
+			spi_dev->conf = &spinor_config;
+			break;
+		case SPIDEV_TYPE:
+			spi_dev->xfer_req_recv = spidev_xfer_req_recv;
+			spi_dev->buf_size = 0;
+			spi_dev->conf = &spidev_config;
+			break;
+		case SPIMOD_TYPE:
+			spi_dev->xfer_req_recv = spidev_xfer_req_recv;
+			spi_dev->buf_size = 0;
+			spi_dev->conf = &spimod_config;
+			break;
 	}
 
 	spi_dev->state = SPI_NOR_IDLE;
@@ -260,7 +267,7 @@ static int spi_set_device(uint8_t cs, int spi_type)
 	spi_dev->buf = calloc(1, spi_dev->buf_size);
 	if (!spi_dev->buf) {
 		free(spi_dev);
-		return -ENOMEM;
+		return 0;
 	}
 
 	return 0;
@@ -268,11 +275,9 @@ static int spi_set_device(uint8_t cs, int spi_type)
 
 static int spi_master_setup(void)
 {
-	int i;
-
 	master = calloc(1, sizeof(struct gb_spi_master));
 	if (!master)
-		return -ENOMEM;
+		return 0;
 
 	master->mode = GB_SPI_MODE_MODE_3;
 	master->flags = 0;
@@ -284,12 +289,10 @@ static int spi_master_setup(void)
 	master->devices = calloc(master->num_chipselect,
 				 sizeof(struct gb_spi_dev));
 	if (!master->devices)
-		return -ENOMEM;
-
-	/* for even set spidev for odd set spinor */
-	for (i = 0; i < SPI_NUM_CS; i++)
-		spi_set_device(i, (i % 2 ? SPINOR_TYPE : SPIDEV_TYPE));
-
+		return 0;
+	
+  	spi_set_device(0,  SPIMOD_TYPE );
+  	spi_set_device(1,  SPIDEV_TYPE );
 	return 0;
 }
 
@@ -338,7 +341,13 @@ int spi_handler(struct gbsim_connection *connection, void *rbuf,
 		op_rsp->spi_dc_rsp.bits_per_word = conf->bits_per_word;
 		op_rsp->spi_dc_rsp.max_speed_hz = htole32(conf->max_speed_hz);
 		op_rsp->spi_dc_rsp.device_type = conf->device_type;
-	        memcpy(op_rsp->spi_dc_rsp.name, conf->name, sizeof(conf->name));
+		char channelfilename[60];
+		char devicename[20];
+		FILE* channelfile;
+		snprintf(channelfilename, 59, "/sys/bus/greybus/devices/%d-%d.%d.ctrl/product_string", connection->cport_id,connection->intf->interface_id,connection->intf->interface_id);
+		channelfile = fopen(channelfilename,"r");
+		fscanf (channelfile,"%s",devicename);	
+	    memcpy(op_rsp->spi_dc_rsp.name, devicename, sizeof(devicename));
 		break;
 	case GB_SPI_TYPE_TRANSFER:
 		xfer_cs = op_req->spi_xfer_req.chip_select;
@@ -362,8 +371,8 @@ int spi_handler(struct gbsim_connection *connection, void *rbuf,
 
 		payload_size = sizeof(struct gb_spi_transfer_response) + xfer_rx;
 		break;
-	default:
-		return -EINVAL;
+	//default: //Gives Unknown Operation Error, Needs to find origin
+	//	return -EINVAL;
 	}
 
 	message_size = sizeof(struct gb_operation_msg_hdr) + payload_size;
@@ -387,4 +396,13 @@ char *spi_get_operation(uint8_t type)
 	default:
 		return "(Unknown operation)";
 	}
+}
+void spi_init(void)	
+{	
+	if(bbb_backend)
+	{
+		ifd1 = open("/dev/spidev1.0", O_RDWR);	//needs fixing
+		if (ifd1 < 0)	
+			gbsim_error("failed opening spi node read/write\n");
+	}	
 }
