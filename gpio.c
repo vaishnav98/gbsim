@@ -29,8 +29,8 @@ struct gb_gpio {
 	uint8_t irq_unmasked;
 };
 
-static struct gb_gpio gb_gpios[6];
-static gpio *gpios[6];
+static struct gb_gpio gb_gpios[4];
+static gpio *gpios[4S];
 
 static int gb_gpio_set_value(uint8_t which, uint8_t value)
 {
@@ -254,12 +254,9 @@ void gpio_init(void)
 
 	if (bbb_backend) {
 		/*
-		 * Grab the four onboard LEDs (gpio1:24-27) and then
-		 * P9-12 and P8-26 (gpio1:28-29) to support input. The
-		 * pins on the header can be used in loopback mode for
-		 * testing.
+		 * Grab the four onboard LEDs (gpio1:24-27) as outputs
 		 */
-		for (i=0; i<6; i++)
-			gpios[i] = libsoc_gpio_request(56+i, LS_GPIO_GREEDY);
+		for (i=0; i<4; i++)
+			gpios[i] = libsoc_gpio_request(53+i, LS_GPIO_GREEDY);
 	}
 }
