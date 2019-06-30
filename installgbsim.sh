@@ -28,6 +28,7 @@ wget https://raw.githubusercontent.com/beagleboard/linux/4.14/drivers/usb/gadget
 make 
 cp dummy_hcd.ko /lib/modules/`uname -r`/kernel/drivers/usb/gadget/legacy/
 depmod
+cd ..
 cp startgbsim /usr/bin/startgbsim
 cp systemd/gbsim.service /etc/systemd/system/
 systemctl daemon-reload
