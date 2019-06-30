@@ -30,7 +30,7 @@ struct gb_gpio {
 };
 
 static struct gb_gpio gb_gpios[4];
-static gpio *gpios[4S];
+static gpio *gpios[4];
 
 static int gb_gpio_set_value(uint8_t which, uint8_t value)
 {
