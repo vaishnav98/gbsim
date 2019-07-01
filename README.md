@@ -45,5 +45,5 @@ by default after installation via the install script ,the gbsim will be set up a
 ```
 
 ### Using the simulator
-This version of the simulator is modified to Support MikroElektronika Click Boards and the support for Click Boards can be tested by downloading and setting up the manifesto and the insclick/rmclick utilities.Manifest blob files can be created using the Manifesto tool
+This version of the simulator is modified to Support MikroElektronika Click Boards and the support for Click Boards can be tested by downloading and setting up the manifesto tool and the insclick/rmclick utilities.Manifest blob files can be created using the Manifesto tool
 found at https://github.com/vaishnav98/manifesto. The click boards can be easily loaded/unloaded using the insclick/rmclick utilities
