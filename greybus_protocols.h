@@ -931,6 +931,10 @@ struct gb_spi_master_config_response {
 struct gb_spi_device_config_request {
 	__u8	chip_select;
 } __packed;
+struct mymmcplatformdata {
+	unsigned int cd_gpio;
+	uint32_t ocr_mask;	
+};
 
 struct gb_spi_device_config_response {
 	__le16	mode;
@@ -941,6 +945,7 @@ struct gb_spi_device_config_response {
 #define GB_SPI_SPI_NOR		0x01
 #define GB_SPI_SPI_MODALIAS	0x02
 	__u8	name[32];
+	void * platform_data;
 } __packed;
 
 /**

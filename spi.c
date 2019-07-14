@@ -45,7 +45,9 @@ struct gb_spi_dev_config {
 	uint32_t	max_speed_hz;
 	uint8_t		device_type;
 	uint8_t		name[32];
+	void *  platform_data;
 };
+
 
 struct gb_spi_dev {
 	uint8_t	cs;
@@ -74,7 +76,7 @@ struct gb_spi_master {
 
 static struct gb_spi_master *master;
 
-static struct gb_spi_dev_config spidev_config = {
+ static struct gb_spi_dev_config spidev_config = {
 	.mode		= GB_SPI_MODE_MODE_3,
 	.bits_per_word	= 8,
 	.max_speed_hz	= 10000000,
@@ -82,12 +84,17 @@ static struct gb_spi_dev_config spidev_config = {
 	.device_type	= GB_SPI_SPI_DEV,
 };
 
+struct mymmcplatformdata mymmc={
+				.cd_gpio = 23,
+				.ocr_mask= 0x00100000|0x00200000,
+	};
 static struct gb_spi_dev_config spimod_config = {
 	.mode		= GB_SPI_MODE_MODE_0,
 	.bits_per_word	= 8,
 	.max_speed_hz	= 6000000,
-	.name		= "custom",
+	.name		= "mmc_spi",
 	.device_type	= GB_SPI_SPI_MODALIAS ,
+	.platform_data =&mymmc,
 };
 
 static struct gb_spi_dev_config spinor_config = {
@@ -340,14 +347,15 @@ int spi_handler(struct gbsim_connection *connection, void *rbuf,
 		op_rsp->spi_dc_rsp.mode = htole16(conf->mode);
 		op_rsp->spi_dc_rsp.bits_per_word = conf->bits_per_word;
 		op_rsp->spi_dc_rsp.max_speed_hz = htole32(conf->max_speed_hz);
-		op_rsp->spi_dc_rsp.device_type = conf->device_type;
+		op_rsp->spi_dc_rsp.device_type = conf->device_type;		
 		char channelfilename[60];
 		char devicename[20];
 		FILE* channelfile;
 		snprintf(channelfilename, 59, "/sys/bus/greybus/devices/%d-%d.%d.ctrl/product_string", connection->cport_id,connection->intf->interface_id,connection->intf->interface_id);
 		channelfile = fopen(channelfilename,"r");
-		fscanf (channelfile,"%s",devicename);	
-	    memcpy(op_rsp->spi_dc_rsp.name, devicename, sizeof(devicename));
+		fscanf (channelfile,"%s",devicename);
+		op_rsp->spi_dc_rsp.platform_data = malloc( sizeof *conf->platform_data );
+		memcpy(op_rsp->spi_dc_rsp.platform_data, conf->platform_data, sizeof(*conf->platform_data));
 		break;
 	case GB_SPI_TYPE_TRANSFER:
 		xfer_cs = op_req->spi_xfer_req.chip_select;
