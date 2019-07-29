@@ -29,8 +29,10 @@ struct gb_gpio {
 	uint8_t irq_unmasked;
 };
 
-static struct gb_gpio gb_gpios[4];
-static gpio *gpios[4];
+static struct gb_gpio gb_gpios[18];
+static gpio *gpios[18];
+
+unsigned int mikrobus_gpios[18] = {89,23,50,45,26,110,60,48,50,49,116,51,26,65,22,46,27,23};
 
 static int gb_gpio_set_value(uint8_t which, uint8_t value)
 {
@@ -254,9 +256,9 @@ void gpio_init(void)
 
 	if (bbb_backend) {
 		/*
-		 * Grab the four onboard LEDs (gpio1:24-27) as outputs
+		 * Grab the PocketBeagle Mikrobus Pins
 		 */
-		for (i=0; i<4; i++)
-			gpios[i] = libsoc_gpio_request(53+i, LS_GPIO_GREEDY);
+		for (i=0; i<6; i++)
+			gpios[i] = libsoc_gpio_request(mikrobus_gpios[i], LS_GPIO_GREEDY);
 	}
 }
