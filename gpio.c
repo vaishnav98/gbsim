@@ -32,46 +32,22 @@ struct gb_gpio {
 static struct gb_gpio gb_gpios[18];
 static gpio *gpios[18];
 
+uint8_t current_which;
+uint16_t current_hd_cport_id;
+
 unsigned int mikrobus_gpios[18] = {89,23,50,45,26,110,60,48,50,49,116,51,26,65,22,46,27,23};
 
-static int gb_gpio_set_value(uint8_t which, uint8_t value)
+int int_event_callback(void *args)
 {
-	uint8_t which_con;
+	size_t payload_size;	  
+	uint16_t message_size;
+	struct op_msg *op_req=malloc(sizeof(struct op_msg));
 
-	gb_gpios[which].value = value;
-
-	/*
-	 * check to see if it is even, we do nothig. If it is odd, we simulate
-	 * that the gpio is loopback to the even one before it. Of course, if
-	 * activated and if it is set as input
-	 */
-	if (!(which % 2))
-		return 0;
-
-	which_con = which - 1;
-
-	if (!gb_gpios[which_con].activated || gb_gpios[which_con].direction != 1)
-		return 0;
-
-	if (gb_gpios[which_con].value == value)
-		return 0;
-
-	gb_gpios[which_con].value = value;
-
-	 /* check to see if we need to send an irq event */
-	if (!gb_gpios[which_con].irq_type || !gb_gpios[which_con].irq_unmasked)
-		return 0;
-
-	if (gb_gpios[which_con].irq_type == GB_GPIO_IRQ_TYPE_EDGE_RISING &&
-	    value)
-		return 1;
-	else if (gb_gpios[which_con].irq_type == GB_GPIO_IRQ_TYPE_EDGE_FALLING &&
-		 !value)
-		return 1;
-	else if (gb_gpios[which_con].irq_type == GB_GPIO_IRQ_TYPE_EDGE_BOTH)
-		return 1;
-
-	return 0;
+	payload_size = sizeof(struct gb_gpio_irq_event_request);
+	op_req->gpio_irq_event_req.which = current_which;
+	message_size = sizeof(struct gb_operation_msg_hdr) + payload_size;
+	send_request(current_hd_cport_id, op_req, message_size, 0, GB_GPIO_TYPE_IRQ_EVENT);
+	return EXIT_SUCCESS;
 }
 
 int gpio_handler(struct gbsim_connection *connection, void *rbuf,
@@ -85,7 +61,6 @@ int gpio_handler(struct gbsim_connection *connection, void *rbuf,
 	uint16_t message_size;
 	uint16_t hd_cport_id = connection->hd_cport_id;
 	uint8_t which = 0;
-	int send_event = 0;
 
 	op_rsp = (struct op_msg *)tbuf;
 	oph = (struct gb_operation_msg_hdr *)&op_req->header;
@@ -152,8 +127,6 @@ int gpio_handler(struct gbsim_connection *connection, void *rbuf,
 			    which, op_req->gpio_set_val_req.value);
 		if (bbb_backend)
 			libsoc_gpio_set_level(gpios[which], op_req->gpio_set_val_req.value);
-		else
-			send_event = gb_gpio_set_value(which, op_req->gpio_set_val_req.value);
 		break;
 	case GB_GPIO_TYPE_SET_DEBOUNCE:
 		payload_size = 0;
@@ -166,6 +139,18 @@ int gpio_handler(struct gbsim_connection *connection, void *rbuf,
 		gbsim_debug("GPIO %d set IRQ type %d request\n  ",
 			    which, op_req->gpio_irq_type_req.type);
 		gb_gpios[which].irq_type = op_req->gpio_irq_type_req.type;
+		if(bbb_backend) {
+			libsoc_gpio_set_direction(gpios[which], INPUT);
+			if(gb_gpios[which].irq_type == GB_GPIO_IRQ_TYPE_EDGE_RISING)
+				libsoc_gpio_set_edge(gpios[which], RISING);
+			else if(gb_gpios[which].irq_type == GB_GPIO_IRQ_TYPE_EDGE_FALLING)
+				libsoc_gpio_set_edge(gpios[which], FALLING);
+			else if(gb_gpios[which].irq_type == GB_GPIO_IRQ_TYPE_EDGE_BOTH)
+				libsoc_gpio_set_edge(gpios[which], BOTH);
+			current_which=which;
+			current_hd_cport_id=hd_cport_id;
+			libsoc_gpio_callback_interrupt(gpios[which], &int_event_callback, NULL);
+		}
 		break;
 	case GB_GPIO_TYPE_IRQ_MASK:
 		payload_size = 0;
@@ -190,25 +175,6 @@ int gpio_handler(struct gbsim_connection *connection, void *rbuf,
 				PROTOCOL_STATUS_SUCCESS);
 	if (nbytes)
 		return nbytes;
-
-#define TEST_HACK
-#ifdef TEST_HACK
-	/*
-	 * Test GPIO interrupts by sending one when they become unmasked, or
-	 * when set value trigger one
-	 */
-	if (send_event) {
-		payload_size = sizeof(struct gb_gpio_irq_event_request);
-		op_req->gpio_irq_event_req.which = which - 1;
-
-		/* mask the irq to mimic fw action on event send */
-		gb_gpios[which - 1].irq_unmasked = 0;
-		message_size = sizeof(struct gb_operation_msg_hdr) + payload_size;
-		return send_request(hd_cport_id, op_req, message_size, 0,
-				    GB_GPIO_TYPE_IRQ_EVENT);
-	}
-#endif
-
 	return 0;
 }
 
@@ -259,6 +225,6 @@ void gpio_init(void)
 		 * Grab the PocketBeagle Mikrobus Pins
 		 */
 		for (i=0; i<6; i++)
-			gpios[i] = libsoc_gpio_request(mikrobus_gpios[i], LS_GPIO_GREEDY);
+			gpios[i] = libsoc_gpio_request(mikrobus_gpios[i], LS_GPIO_SHARED);
 	}
 }
