@@ -216,6 +216,15 @@ char *gpio_get_operation(uint8_t type)
 	}
 }
 
+void gpio_cleanup(void)
+{
+	int i;
+
+	for(i=0;i<18;i++)
+		if(gpios[i])
+			libsoc_gpio_free(gpios[i]);
+}
+
 void gpio_init(void)
 {
 	int i;

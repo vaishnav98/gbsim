@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <dirent.h>
 
 #include "gbsim.h"
 #include "gbsim_usb.h"
@@ -33,6 +34,17 @@ static void cleanup(void)
 	printf("cleaning up\n");
 	sigemptyset(&sigact.sa_mask);
 
+	DIR *hotplugdir = opendir("/tmp/gbsim/hotplug-module/");
+    struct dirent *next_file;
+	char filepath[256];
+
+	while ( (next_file = readdir(hotplugdir)) != NULL )
+		{
+			sprintf(filepath, "%s/%s", "/tmp/gbsim/hotplug-module/", next_file->d_name);
+			remove(filepath);
+		}
+
+	closedir(hotplugdir);
 	uart_cleanup();
 	gbsim_usb_cleanup();
 	svc_exit();

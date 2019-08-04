@@ -283,6 +283,7 @@ char *control_get_operation(uint8_t type);
 int gpio_handler(struct gbsim_connection *, void *, size_t, void *, size_t);
 char *gpio_get_operation(uint8_t type);
 void gpio_init(void);
+void gpio_cleanup(void);
 
 int i2c_handler(struct gbsim_connection *, void *, size_t, void *, size_t);
 char *i2c_get_operation(uint8_t type);
