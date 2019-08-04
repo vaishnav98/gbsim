@@ -15,6 +15,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
@@ -29,8 +30,8 @@ struct gb_gpio {
 	uint8_t irq_unmasked;
 };
 
-static struct gb_gpio gb_gpios[18];
-static gpio *gpios[18];
+static struct gb_gpio gb_gpios[12];
+static gpio *gpios[12];
 
 uint8_t current_which;
 uint16_t current_hd_cport_id;
@@ -220,7 +221,7 @@ void gpio_cleanup(void)
 {
 	int i;
 
-	for(i=0;i<18;i++)
+	for(i=0;i<12;i++)
 		if(gpios[i])
 			libsoc_gpio_free(gpios[i]);
 }
@@ -228,12 +229,23 @@ void gpio_cleanup(void)
 void gpio_init(void)
 {
 	int i;
+	char platform[60];
 
 	if (bbb_backend) {
-		/*
-		 * Grab the PocketBeagle Mikrobus Pins
-		 */
-		for (i=0; i<6; i++)
+		FILE* modelfile;
+		modelfile = fopen("/proc/device-tree/model","r");		 
+		fscanf (modelfile,"%s",platform);
+		if(strcmp(platform,"TI AM335x PocketBeagle")!=0)
+		{	
+			gbsim_debug("Initalizing PocketBeagle GPIOs \n");
+			for (i=0; i<6; i++)
 			gpios[i] = libsoc_gpio_request(mikrobus_gpios[i], LS_GPIO_SHARED);
+		}
+		else
+		{
+			gbsim_debug("Initalizing Beaglebone Black GPIOs \n");
+			for (i=6; i<18; i++)
+			gpios[i-6] = libsoc_gpio_request(mikrobus_gpios[i], LS_GPIO_SHARED);
+		}
 	}
 }
