@@ -63,7 +63,7 @@ int i2c_handler(struct gbsim_connection *connection, void *rbuf,
 	switch (oph->type) {
 	case GB_I2C_TYPE_FUNCTIONALITY:
 		payload_size = sizeof(struct gb_i2c_functionality_response);
-		op_rsp->i2c_fcn_rsp.functionality = htole32(I2C_FUNC_I2C);
+		op_rsp->i2c_fcn_rsp.functionality = htole32(I2C_FUNC_I2C | I2C_FUNC_SMBUS_EMUL);
 		break;
 	case GB_I2C_TYPE_TRANSFER:
 		op_count = le16toh(op_req->i2c_xfer_req.op_count);
