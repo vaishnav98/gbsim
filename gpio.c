@@ -33,6 +33,8 @@ struct gb_gpio {
 static struct gb_gpio gb_gpios[12];
 static gpio *gpios[12];
 
+uint8_t gpio_count=5;
+
 uint8_t current_which;
 uint16_t current_hd_cport_id;
 
@@ -69,7 +71,7 @@ int gpio_handler(struct gbsim_connection *connection, void *rbuf,
 	switch (oph->type) {
 	case GB_GPIO_TYPE_LINE_COUNT:
 		payload_size = sizeof(struct gb_gpio_line_count_response);
-		op_rsp->gpio_lc_rsp.count = 5; /* Something arbitrary, but useful */
+		op_rsp->gpio_lc_rsp.count = gpio_count;
 		break;
 	case GB_GPIO_TYPE_ACTIVATE:
 		payload_size = 0;
@@ -244,6 +246,7 @@ void gpio_init(void)
 		else
 		{
 			gbsim_debug("Initalizing Beaglebone Black GPIOs \n");
+			gpio_count=11;
 			for (i=6; i<18; i++)
 			gpios[i-6] = libsoc_gpio_request(mikrobus_gpios[i], LS_GPIO_SHARED);
 		}
