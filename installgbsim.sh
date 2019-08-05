@@ -6,7 +6,7 @@ apt-get install linux-headers-`uname -r`
 git clone https://github.com/jackmitch/libsoc.git
 cd libsoc
 autoreconf -i
-./configure
+./configure --disable-debug --enable-python --with-board-configs
 make
 make install
 cd ..      
