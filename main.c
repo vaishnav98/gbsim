@@ -20,6 +20,8 @@
 
 int bbb_backend = 1;
 int i2c_adapter = 0;
+int spi_busno = 0;
+int spi_csno = 0;
 int uart_portno = 0;
 int uart_count = 0;
 char *hotplug_basedir="/tmp/gbsim";
@@ -71,11 +73,15 @@ int main(int argc, char *argv[])
 	int ret = -EINVAL;
 	int o;
 
-	while ((o = getopt(argc, argv, ":bh:i:u:U:v")) != -1) {
+	while ((o = getopt(argc, argv, ":bc:h:i:s:u:U:v")) != -1) {
 		switch (o) {
 		case 'b':
 			bbb_backend = 1;
 			printf("bbb_backend %d\n", bbb_backend);
+			break;
+		case 'c':
+			spi_csno = atoi(optarg);
+			printf("SPI CS No. %d\n", spi_csno);
 			break;
 		case 'h':
 			hotplug_basedir = optarg;
@@ -84,6 +90,10 @@ int main(int argc, char *argv[])
 		case 'i':
 			i2c_adapter = atoi(optarg);
 			printf("i2c_adapter %d\n", i2c_adapter);
+			break;
+		case 's':
+			spi_busno = atoi(optarg);
+			printf("SPI Bus No. %d\n", spi_busno);
 			break;
 		case 'u':
 			uart_portno = atoi(optarg);
@@ -139,6 +149,7 @@ int main(int argc, char *argv[])
 		goto out_cleanup;
 
 	gpio_init();
+	i2c_init();
 	uart_init();
 	pwm_init();
 	spi_init();

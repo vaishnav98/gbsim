@@ -36,6 +36,8 @@ extern int bbb_backend;
 extern int i2c_adapter;
 extern int uart_portno;
 extern int uart_count;
+extern int spi_busno;
+extern int spi_csno;
 extern int verbose;
 extern char *hotplug_basedir;
 
@@ -287,6 +289,7 @@ void gpio_cleanup(void);
 
 int i2c_handler(struct gbsim_connection *, void *, size_t, void *, size_t);
 char *i2c_get_operation(uint8_t type);
+void i2c_init(void);
 
 int pwm_handler(struct gbsim_connection *, void *, size_t, void *, size_t);
 char *pwm_get_operation(uint8_t type);

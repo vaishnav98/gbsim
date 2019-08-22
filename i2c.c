@@ -24,7 +24,6 @@
 
 static __u8 data_byte;
 static int ifd;
-int flag=0;
 
 int i2c_handler(struct gbsim_connection *connection, void *rbuf,
 		size_t rsize, void *tbuf, size_t tsize)
@@ -44,21 +43,6 @@ int i2c_handler(struct gbsim_connection *connection, void *rbuf,
 
 	op_rsp = (struct op_msg *)tbuf;
 	oph = (struct gb_operation_msg_hdr *)&op_req->header;
-
-	if(!flag){			
-		char i2cfilename[20];
-		char channelfilename[60];
-		char channel[5];
-		FILE* channelfile;
-		snprintf(channelfilename, 59, "/sys/bus/greybus/devices/%d-%d.%d.ctrl/product_string", connection->cport_id,connection->intf->interface_id,connection->intf->interface_id);
-		channelfile = fopen(channelfilename,"r");		 
-		fscanf (channelfile,"%s",channel);
-		snprintf(i2cfilename, 19, "/dev/%s",channel);
-		ifd = open(i2cfilename, O_RDWR);
-		if (ifd < 0)
-			gbsim_error("failed opening i2c-dev node read/write\n");
-		flag=1;
-	}
 
 	switch (oph->type) {
 	case GB_I2C_TYPE_FUNCTIONALITY:
@@ -143,5 +127,17 @@ char *i2c_get_operation(uint8_t type)
 		return "GB_I2C_TYPE_TRANSFER";
 	default:
 		return "(Unknown operation)";
+	}
+}
+
+void i2c_init(void)
+{
+	char filename[20];
+
+	if (bbb_backend) {
+		snprintf(filename, 19, "/dev/i2c-%d", i2c_adapter);
+		ifd = open(filename, O_RDWR);
+		if (ifd < 0)
+			gbsim_error("failed opening i2c-dev node read/write\n");
 	}
 }

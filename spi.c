@@ -399,9 +399,12 @@ char *spi_get_operation(uint8_t type)
 }
 void spi_init(void)	
 {	
+	char filename[30];
+
 	if(bbb_backend)
 	{
-		ifd1 = open("/dev/spidev1.0", O_RDWR);	//needs fixing
+		snprintf(filename, 29, "/dev/spidev%d.%d", spi_busno,spi_csno);
+		ifd1 = open(filename, O_RDWR);
 		if (ifd1 < 0)	
 			gbsim_error("failed opening spi node read/write\n");
 	}	
