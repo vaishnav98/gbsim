@@ -23,6 +23,11 @@ int gadget_create(usbg_state **s, usbg_gadget **g)
 	usbg_function *f;
 	int ret = -EINVAL;
 	int usbg_ret;
+	char gbsim_name[10];
+	char gadget_name[5];
+
+	snprintf(gbsim_name, 9, "gbsim%d", gbsim_id);
+	snprintf(gadget_name, 4, "g%d", gbsim_id);
 
 	struct usbg_gadget_attrs g_attrs = {
 			0x0200, /* bcdUSB */
@@ -53,7 +58,7 @@ int gadget_create(usbg_state **s, usbg_gadget **g)
 		goto out1;
 	}
 
-	usbg_ret = usbg_create_gadget(*s, "g1", &g_attrs, &g_strs, g);
+	usbg_ret = usbg_create_gadget(*s, gadget_name, &g_attrs, &g_strs, g);
 	if (usbg_ret != USBG_SUCCESS) {
 		gbsim_error("Error on create gadget\n");
 		gbsim_error("Error: %s : %s\n", usbg_error_name(usbg_ret),
@@ -61,7 +66,7 @@ int gadget_create(usbg_state **s, usbg_gadget **g)
 		goto out2;
 	}
 
-	usbg_ret = usbg_create_function(*g, USBG_F_FFS, "gbsim", NULL, &f);
+	usbg_ret = usbg_create_function(*g, USBG_F_FFS, gbsim_name, NULL, &f);
 	if (usbg_ret != USBG_SUCCESS) {
 		gbsim_error("Error creating gbsim function\n");
 		gbsim_error("Error: %s : %s\n", usbg_error_name(usbg_ret),
@@ -77,7 +82,7 @@ int gadget_create(usbg_state **s, usbg_gadget **g)
 		goto out2;
 	}
 
-	usbg_ret = usbg_add_config_function(c, "gbsim", f);
+	usbg_ret = usbg_add_config_function(c, gbsim_name, f);
 	if (usbg_ret != USBG_SUCCESS) {
 		gbsim_error("Error adding gbsim configuration\n");
 		gbsim_error("Error: %s : %s\n", usbg_error_name(usbg_ret),
@@ -96,9 +101,14 @@ out1:
 	return ret;
 }
 
-int gadget_enable(usbg_gadget *g)
+int gadget_enable(usbg_state *s,usbg_gadget *g)
 {
-	return usbg_enable_gadget(g, NULL);
+	usbg_udc *udc;
+	char dummy_udc_name[20];
+
+	snprintf(dummy_udc_name, 19, "dummy_udc.%d", gbsim_id);
+	udc=usbg_get_udc(s, dummy_udc_name);
+	return usbg_enable_gadget(g, udc);
 }
 
 void gadget_cleanup(usbg_state *s, usbg_gadget *g)

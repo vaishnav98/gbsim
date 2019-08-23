@@ -24,6 +24,7 @@ int spi_busno = 0;
 int spi_csno = 0;
 int uart_portno = 0;
 int uart_count = 0;
+int gbsim_id=0;
 char *hotplug_basedir="/tmp/gbsim";
 int verbose = 0;
 
@@ -73,7 +74,7 @@ int main(int argc, char *argv[])
 	int ret = -EINVAL;
 	int o;
 
-	while ((o = getopt(argc, argv, ":bc:h:i:s:u:U:v")) != -1) {
+	while ((o = getopt(argc, argv, ":bc:g:h:i:s:u:U:v")) != -1) {
 		switch (o) {
 		case 'b':
 			bbb_backend = 1;
@@ -83,6 +84,9 @@ int main(int argc, char *argv[])
 			spi_csno = atoi(optarg);
 			printf("SPI CS No. %d\n", spi_csno);
 			break;
+		case 'g':
+			gbsim_id = atoi(optarg);
+			printf("GBSIM ID. %d\n", gbsim_id);
 		case 'h':
 			hotplug_basedir = optarg;
 			printf("hotplug_basedir %s\n", hotplug_basedir);

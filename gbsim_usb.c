@@ -31,7 +31,7 @@ int gbsim_usb_init(void)
 	if (ret < 0)
 		goto gadget_cleanup;
 
-	ret = gadget_enable(g);
+	ret = gadget_enable(s,g);
 	if (ret < 0)
 		goto functionfs_cleanup;
 

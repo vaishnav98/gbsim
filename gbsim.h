@@ -38,6 +38,7 @@ extern int uart_portno;
 extern int uart_count;
 extern int spi_busno;
 extern int spi_csno;
+extern int gbsim_id;
 extern int verbose;
 extern char *hotplug_basedir;
 

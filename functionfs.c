@@ -28,12 +28,6 @@
 #include "arpc.h"
 #include "config.h"
 
-#define FFS_PREFIX		"/dev/ffs-gbsim/"
-#define FFS_GBEMU_EP0		FFS_PREFIX"ep0"
-#define FFS_GBEMU_IN		FFS_PREFIX"ep1"
-#define FFS_GBEMU_IN_ARPC	FFS_PREFIX"ep2"
-#define FFS_GBEMU_OUT		FFS_PREFIX"ep3"
-
 #define STR_INTERFACE	"gbsim"
 
 #define NEVENT		5
@@ -61,6 +55,12 @@ int from_ap = -ENXIO;
 
 static pthread_t recv_pthread;
 
+char FFS_PREFIX[40];
+char FFS_GBEMU_EP0[40];
+char FFS_GBEMU_IN[40];
+char FFS_GBEMU_IN_ARPC[40];
+char FFS_GBEMU_OUT[40];
+char GBSIM_NAME[20];
 
 /*
  * Descriptors:
@@ -498,9 +498,16 @@ done:
 
 int functionfs_init(void)
 {
+	snprintf(GBSIM_NAME, 19, "%s%d", "gbsim", gbsim_id);
+	snprintf(FFS_PREFIX, 39, "/dev/ffs-gbsim%d/", gbsim_id);
+	snprintf(FFS_GBEMU_EP0, 39, "%s%s", FFS_PREFIX,"ep0");
+	snprintf(FFS_GBEMU_IN, 39, "%s%s", FFS_PREFIX,"ep1");
+	snprintf(FFS_GBEMU_IN_ARPC, 39, "%s%s", FFS_PREFIX,"ep2");
+	snprintf(FFS_GBEMU_OUT, 39, "%s%s", FFS_PREFIX,"ep3");
+
 	/* Mount functionfs */
 	mkdir(FFS_PREFIX, S_IRWXU|S_IRWXG|S_IRWXO);
-	mount("gbsim", FFS_PREFIX, "functionfs", 0, NULL);
+	mount(GBSIM_NAME, FFS_PREFIX, "functionfs", 0, NULL);
 
 	/* Configure the Greybus emulator */
 	functionfs_init_gb();

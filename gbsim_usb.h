@@ -12,7 +12,7 @@
 #include <usbg/usbg.h>
 
 int gadget_create(usbg_state **, usbg_gadget **);
-int gadget_enable(usbg_gadget *);
+int gadget_enable(usbg_state *, usbg_gadget *);
 void gadget_cleanup(usbg_state *, usbg_gadget *);
 
 int functionfs_init(void);
