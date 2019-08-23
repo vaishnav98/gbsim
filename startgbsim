@@ -25,8 +25,8 @@ else
 	mkdir -p /tmp/gbsim1/hotplug-module
 	mkdir -p /tmp/gbsim2/hotplug-module
 	mkdir -p /tmp/gbsim3/hotplug-module
-	gbsim -g 0 -h /tmp/gbsim0/ -c 0 -s 1 -i 2 &
-	gbsim -g 1 -h /tmp/gbsim1/ -c 1 -s 1 -i 2 &
-	gbsim -g 2 -h /tmp/gbsim2/ -c 0 -s 0 -i 2 &
-	gbsim -g 3 -h /tmp/gbsim3/ -c 2 -s 1 -i 2 &
+	gbsim -g 0 -h /tmp/gbsim0/ -c 0 -s 2 -i 2 &
+	gbsim -g 1 -h /tmp/gbsim1/ -c 1 -s 2 -i 2 &
+	gbsim -g 2 -h /tmp/gbsim2/ -c 0 -s 1 -i 2 &
+	gbsim -g 3 -h /tmp/gbsim3/ -c 0 -s 2 -i 2 &
 fi
