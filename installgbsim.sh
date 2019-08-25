@@ -1,5 +1,6 @@
 #!/bin/bash
 
+board=$(sed "s/ /_/g;s/\o0//g" /proc/device-tree/model)
 apt-get update
 apt-get install build-essential libtool autoconf libconfig-dev
 apt-get install linux-headers-`uname -r`
@@ -30,8 +31,16 @@ cp dummy_hcd.ko /lib/modules/`uname -r`/kernel/drivers/usb/gadget/legacy/
 depmod
 cd ..
 cp startgbsim /usr/bin/startgbsim
-cp systemd/gbsim.service /etc/systemd/system/
+cp systemd/gbsim@.service /etc/systemd/system/
 systemctl daemon-reload
-systemctl enable gbsim
+if [ "x${board}" = "xTI_AM335x_PocketBeagle" ] ; then
+    systemctl enable gbsim@1
+    systemctl enable gbsim@2
+else
+    systemctl enable gbsim@1
+    systemctl enable gbsim@2
+    systemctl enable gbsim@3
+    systemctl enable gbsim@4
+fi
 cd ..
 

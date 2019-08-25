@@ -1,0 +1,8 @@
+[Unit]
+Description=GBSIM(Greybus Simulator Service) %i
+
+[Service]
+ExecStart= /usr/bin/startgbsim %i
+
+[Install]
+WantedBy=multi-user.target
